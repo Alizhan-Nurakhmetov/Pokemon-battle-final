@@ -21,3 +21,15 @@ def begin(name, starter):
     message = f"{player['name']} faces {rival['name']}"
     save(battle, starter, message)
     return battle, message
+
+def take_turn(battle, move):
+    """Play and save one turn"""
+    updated, message = play(battle, move)
+    updated["trainer"] = battle["trainer"]
+    updated["id"] = battle["id"]
+    updated["turn"] = battle["turn"] + 1
+    won = None
+    if 0 in updated["hp"]:
+        won = int(updated["hp"][1] == 0)
+    save(updated, move, message, won)
+    return updated, message
