@@ -12,7 +12,7 @@ def trainer_name(text):
  
 def begin(name, starter):
     """Save the opening matchup"""
-    trainer = rainer_name(name)
+    trainer = trainer_name(name)
     battle = start(starter)
     battle["trainer"] = trainer
     battle["id"] = uuid4().hex
