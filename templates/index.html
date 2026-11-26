@@ -1,59 +1,85 @@
 <!doctype html>
 <html lang="en">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Starter Battle</title>
-<style>
-  body { max-width: 36rem; margin: 2rem auto; padding: 0 1rem; font: 1rem system-ui; color: white; background: #172332; }
-  article { padding: .8rem; margin: .6rem 0; background: #27394b; border-radius: .5rem; }
-  a, progress { color: #9ce6b2; accent-color: #9ce6b2; }
-  pre { white-space: pre-wrap; overflow-wrap: anywhere; }
-</style>
-<h1>Starter Battle</h1>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Starter Battle League</title>
+  <style>
+    * { box-sizing: border-box }
+    body { max-width: 42rem; margin: 3rem auto; padding: 0 1rem; background: #f1f5ee;
+           color: #172f28; font: 1rem/1.5 system-ui }
+    h1 { font-size: clamp(2rem, 7vw, 3rem); line-height: 1.1 }
+    nav, .row { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem }
+    section, article { background: white; border: 1px solid #c5d3c9; border-radius: .7rem;
+                       padding: 1rem; margin: 1rem 0 }
+    nav a, button { background: #254c40; color: white; border: 0; border-radius: .4rem;
+                    padding: .5rem .85rem; text-decoration: none; font: inherit; cursor: pointer }
+    input, select { font: inherit; padding: .35rem; max-width: 100% }
+    label, progress { display: block; margin: .6rem 0 }
+    progress { width: 100%; accent-color: #29795b }
+    td, th { text-align: left; padding: .3rem .8rem .3rem 0 }
+    :focus-visible { outline: 3px solid #b95714; outline-offset: 3px }
+  </style>
+</head>
+<body>
+<h1>Starter Battle League</h1>
 {% if screen == 'exit' %}
-  <p>You left the battle. <a href="/">Open main menu</a></p>
+  <p>You left the league. <a href="/">Open main menu</a></p>
 {% else %}
-  <nav><a href="/">Battle</a> · <a href="/?show=history">History</a></nav>
-  <form method="post">
-    <button name="action" value="menu">Main menu</button>
-    <button name="action" value="exit">Exit</button>
-  </form>
-  {% for message in get_flashed_messages() %}
-    <p role="status">{{ message }}</p>
-  {% endfor %}
-  {% if screen == 'history' %}
-    <h2>Battle history</h2>
-    <pre>{{ log }}</pre>
+  <nav aria-label="Game menu">
+    <a href="/">Battle</a><a href="/?show=history">History</a><a href="/?show=scores">Scores</a>
+    <form method="post" class="row">
+      <button name="action" value="menu">New battle</button>
+      <button name="action" value="exit">Exit</button>
+    </form>
+  </nav>
+  {% for message in get_flashed_messages() %}<p role="status">{{ message }}</p>{% endfor %}
+  {% if screen == 'scores' %}
+    <section><h2>League scores</h2><p>Finished battles: {{ total }}</p>
+      {% if rows %}
+        <table><tr><th>Trainer</th><th>Wins</th><th>Played</th></tr>
+          {% for name, wins, played in rows %}
+            <tr><td>{{ name }}</td><td>{{ wins }}</td><td>{{ played }}</td></tr>
+          {% endfor %}
+        </table>
+      {% else %}<p>Finish a battle to enter the league.</p>{% endif %}
+    </section>
+  {% elif screen == 'history' %}
+    <section><h2>Battle history</h2>
+      {% for trainer, move, message in log %}
+        <p><strong>{{ trainer }}</strong> · {{ move }} · {{ message }}</p>
+      {% else %}<p>Play a battle first.</p>{% endfor %}
+    </section>
   {% elif battle %}
-    {% for fighter in battle["fighters"] %}
-      {% set hp = battle["hp"][loop.index0] %}
-      <article>
-        {{ 'You' if loop.first else 'Rival' }} · {{ fighter.name }} · {{ fighter.type | title }}
-        {{ hp }}/{{ fighter.hp }} HP
+    <h2>{{ battle.trainer }} · Turn {{ battle.turn }}</h2>
+    {% for fighter in battle.fighters %}
+      {% set hp = battle.hp[loop.index0] %}
+      <article><strong>{{ 'You' if loop.first else 'Rival' }} · {{ fighter.name }}</strong>
+        <div>{{ fighter.type | title }} · {{ hp }}/{{ fighter.hp }} HP · {{ fighter.source }}</div>
         <progress aria-label="{{ fighter.name }} health" value="{{ hp }}" max="{{ fighter.hp }}"></progress>
       </article>
     {% endfor %}
-    {% if 0 not in battle["hp"] %}
-      <form method="post">
-        <input type="hidden" name="action" value="attack">
+    {% if 0 in battle.hp %}
+      <p><strong>{{ 'You win!' if battle.hp[1] == 0 else 'You lose.' }}</strong></p>
+    {% else %}
+      <form method="post" class="row"><input type="hidden" name="action" value="attack">
         <button name="value" value="Basic">Basic attack</button>
         <button name="value" value="Type">Type attack</button>
       </form>
-    {% else %}
-      <p>{{ 'You win!' if battle["hp"][1] == 0 else 'You lose.' }}</p>
     {% endif %}
   {% else %}
-    <form method="post">
-      <label>Choose a starter
-        <select name="value">
-          {% for name in starters %}
-            <option value="{{ name }}">{{ name | title }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      <button name="action" value="start">Start battle</button>
-    </form>
-    <p>Grass beats Water, Water beats Fire, and Fire beats Grass.</p>
+    <section><h2>Enter the league</h2>
+      <form method="post">
+        <label>Trainer name <input name="trainer" required placeholder="Ash_7"></label>
+        <label>Starter <select name="value">
+          {% for name in starters %}<option value="{{ name }}">{{ name | title }}</option>{% endfor %}
+        </select></label>
+        <button name="action" value="start">Start battle</button>
+      </form>
+      <p>Basic deals 10. Type deals 16 with an advantage and 6 otherwise.</p>
+      <p>Grass beats Water · Water beats Fire · Fire beats Grass</p>
+    </section>
   {% endif %}
 {% endif %}
+</body>
 </html>
