@@ -18,6 +18,7 @@ class BattleTests(unittest.TestCase):
         self.assertEqual(damage("Type", water, grass), 6)
 
     def test_knockout_stops_the_turn(self):
+        """Check that the rival cannot attack after a knockout"""
         player = {"name": "Bulbasaur", "type": "grass"}
         rival = {"name": "Squirtle", "type": "water"}
         battle = {"fighters": [player, rival], "hp": [45, 5]}
