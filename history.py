@@ -30,3 +30,13 @@ def read_history():
     with closing(database()) as db:
         return db.execute("SELECT trainer, move, message FROM turns ORDER BY rowid DESC LIMIT 30").fetchall()
 
+def standings():
+    """Rank trainers by wins"""
+    with closing(database()) as db:
+        rows = db.execute(
+            "SELECT trainer, SUM(won), COUNT(*) FROM turns "
+            "WHERE won IS NOT NULL GROUP BY trainer ORDER BY trainer"
+        ).fetchall()
+    rows.sort(key=lambda row: -row[1])
+    total = sum(row[2] for row in rows)
+    return rows, total
