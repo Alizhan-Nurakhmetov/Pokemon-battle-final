@@ -4,7 +4,7 @@ My midterm was a battle between two Pokémon. For the final, I added trainer nam
 
 ## Demo
 
-[Watch the 30-second battle](media/demo.mov)
+https://github.com/user-attachments/assets/ee815a89-3b36-4a20-adab-99a3bd6dc470
 
 ![A battle on my Mac](media/battle.png)
 
