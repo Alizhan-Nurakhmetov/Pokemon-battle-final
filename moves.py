@@ -5,11 +5,11 @@ class Move:
     def damage(self, attacker, defender):
         """Return the base damage"""
         return self.power
-class Typemove(Move):
+class TypeMove(Move):
     def damage(self, attacker, defender):
         """Add 10 for a strong matchup"""
         strong = {("grass", "water"), ("water", "fire"), ("fire", "grass")}
-        if (attacker["type"], defender["type"] in strong:
+        if (attacker["type"], defender["type"]) in strong:
             return self.power + 10
         return self.power
 def damage(attack, attacker, defender):
