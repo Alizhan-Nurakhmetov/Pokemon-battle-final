@@ -1,23 +1,36 @@
 import json
 from functools import lru_cache
 from random import choice
-from urllib.request import urlopen, Request
+from urllib.request import Request, urlopen
+from moves import damage
 
 def starters():
-    """Return the three starter names"""
+    """List the three starters"""
     return ("bulbasaur", "charmander", "squirtle")
-@lru_cache(maxsize=3)
-def get_pokemon(name):
-    """Get the name, type and HP"""
+
+@lru_cache(maxsize = 3)
+def fetch_pokemon(name):
+    """Load type and HP"""
     url = f"https://pokeapi.co/api/v2/pokemon/{name}/"
-    request = Request(url, headers = {"User-Agent": "PokemonBattle/1.0"})
-    with urlopen(request, timeout = 5) as responce:
-        data= json.load(responce)
+    request = Request(url, headers={"User-Agent": "StarterBattle/2.0"})
+    with urlopen(request, timeout = 3) as response:
+        data = json.load(response)
     kind = data["types"][0]["type"]["name"]
     for stat in data["stats"]:
         if stat["stat"]["name"] == "hp":
-            return {"name": data["name"].title(), "type":kind, "hp": stat["base_stat"]}
-    raise ValueError("PokeAPI did not return HP")
+            return {"name" : data["name"].title(), "type":kind, "hp": stat["base_stat"], "source": "PokeAPI"}
+    raise ValueError("Missing HP")
+
+def get_pokemon(name):
+    """Use an offline card if needed"""
+    if name not in starters():
+        raise ValueError("choose one of the three starters")
+    try:
+        return fetch_pokemon(name)
+    except (OSError, ValueError, KeyError, IndexError, TypeError):
+            cards= {"bulbasaur":("grass", 45), "charmander":("fire", 39), "squirtle":("water", 44)}
+    kind, hp = cards[name]
+    return {"name": name.title(), "type": kind, "hp":hp, "source":"Offline card"}
 
 def start(name):
     """Set up a battle"""
@@ -28,15 +41,6 @@ def start(name):
     player = get_pokemon(name)
     rival = get_pokemon(choice(rivals))
     return {"fighters": [player, rival], "hp": [player["hp"], rival["hp"]]}
-
-def damage (attack, attacker, defender):
-    """The damage of one attack"""
-    if attack == "Basic":
-        return 10
-    strong = {("grass", "water"), ("water", "fire"), ("fire", "grass")}
-    if (attacker["type"], defender["type"]) in strong:
-        return 16
-    return 6
 
 def play(battle, attack):
     """Play a turn and return a message"""
