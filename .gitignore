@@ -1,3 +1,7 @@
 .venv/
 __pycache__/
+.DS_Store
 battles.txt
+battles.db*
+game.log
+.env
